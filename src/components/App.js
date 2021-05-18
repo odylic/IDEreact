@@ -1,27 +1,54 @@
-import React, { useState } from 'react';
+import React, {useState, useEffect} from 'react';
 import Editor from './Editor';
-
+import useLocalStorage from './hooks/useLocalStorage';
 
 function App() {
   // uses hooks, html is the variable, setHtml is the function
-  const [html, setHtml] = useState('')
+  const [html, setHtml] = useLocalStorage('html', '');
+  const [css, setCss] = useLocalStorage('css', '');
+  const [js, setJs] = useLocalStorage('js', '');
+  const [srcDoc, setSrcDoc] = useState('');
+
+  useEffect(() => {
+    const timeout = setTimeout(() => {
+      setSrcDoc(`
+        <html>
+          <body>${html}</body>
+          <style>${css} </style>
+          <script>${js} </script>
+        </html>
+      `);
+    }, 250);
+
+    return () => clearTimeout(timeout);
+    // anytime html, css, js changes
+  }, [html, css, js]);
 
   return (
-    <>
+    <html>
       <div className="pane top-pane">
         <Editor
-          language='xml'
-          displayName='HTML'
-          // writes in the editor the html
+          language="xml"
+          displayName="HTML"
           value={html}
-          // uses the function setHtml to update the html in the editor everytime something is changed
           onChange={setHtml}
         />
-        <Editor />
-        <Editor />
+        <Editor
+          language="css"
+          displayName="CSS"
+          value={css}
+          onChange={setCss}
+        />
+        <Editor
+          language="javascript"
+          displayName="JS"
+          value={js}
+          onChange={setJs}
+        />
       </div>
       <div className="pane">
         <iframe
+          srcDoc={srcDoc}
           title="output"
           sandbox="allow-scripts"
           frameBorder="0"
@@ -29,7 +56,7 @@ function App() {
           height="100%"
         />
       </div>
-    </>
+    </html>
   );
 }
 
